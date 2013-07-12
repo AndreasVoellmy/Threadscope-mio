@@ -359,12 +359,13 @@ drawSingleYScale :: Double -> Double -> Double -> Maybe Interval -> Double -> In
 drawSingleYScale maxSpkValue maxSparkPool maxYHistogram minterval xoffset
                  histogramHeight pcontext trace y = do
   setSourceRGBAhex black 1
-  move_to (ox, y + 8)
+  -- move_to (ox, y + 8)
+  move_to (ox, y + 16)
   layout <- liftIO $ layoutText pcontext (showTrace minterval trace)
   liftIO $ do
     layoutSetWidth layout (Just $ xoffset - 50)
     -- Note: the following does not always work, see the HACK in Timeline.hs
-    layoutSetAttributes layout [AttrSize minBound maxBound 8,
+    layoutSetAttributes layout [AttrSize minBound maxBound 14,
                                 AttrFamily minBound maxBound "sans serif"]
   showLayout layout
   case traceMaxSpark maxSpkValue maxSparkPool maxYHistogram trace of
@@ -388,10 +389,10 @@ traceHeight _ TraceHEC{}           = hecTraceHeight
 traceHeight _ TraceInstantHEC{}    = hecInstantHeight
 traceHeight _ TraceCreationHEC{}   = hecSparksHeight
 traceHeight _ TraceConversionHEC{} = hecSparksHeight
-traceHeight _ TracePoolHEC{}       = hecSparksHeight
-traceHeight h TraceHistogram       = h
+traceHeight _ TracePoolHEC{}       = hecSparksHeight 
+traceHeight h TraceHistogram       = h 
 traceHeight _ TraceGroup{}         = error "traceHeight"
-traceHeight _ TraceActivity        = activityGraphHeight
+traceHeight _ TraceActivity        = activityGraphHeight 
 
 -- | Calculate the total Y span of all traces.
 calculateTotalTimelineHeight :: Bool -> Int -> [Trace] -> Int

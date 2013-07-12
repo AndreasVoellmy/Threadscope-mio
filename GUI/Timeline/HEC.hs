@@ -135,7 +135,8 @@ drawAverageDuration :: ViewParameters
                     -> Timestamp -> Timestamp -> Timestamp -> Timestamp
                     -> Render ()
 drawAverageDuration ViewParameters{..} startTime endTime runAv gcAv = do
-  setSourceRGBAhex (if not bwMode then runningColour else black) 1.0
+  --setSourceRGBAhex (if not bwMode then runningColour else black) 1.0
+  setSourceRGBAhex (if not bwMode then runningColour else lightGrey) 1.0
   when (runAv > 0) $
     draw_rectangle startTime hecBarOff         -- x, y
                    (endTime - startTime)       -- w
@@ -144,7 +145,8 @@ drawAverageDuration ViewParameters{..} startTime endTime runAv gcAv = do
   --move_to (oxs + startTime, 0)
   --relMoveTo (4/scaleValue) 13
   --unscaledText scaleValue (show nrEvents)
-  setSourceRGBAhex (if not bwMode then gcColour else black) gcRatio
+  --setSourceRGBAhex (if not bwMode then gcColour else black) gcRatio
+  setSourceRGBAhex (if not bwMode then gcColour else black) 1.0
   draw_rectangle startTime      -- x
                  (hecBarOff+hecBarHeight)      -- y
                  (endTime - startTime)         -- w
@@ -163,6 +165,7 @@ unscaledText :: String -> Render ()
 unscaledText text
   = do m <- getMatrix
        identityMatrix
+       setFontSize 20
        showText text
        setMatrix m
 
@@ -180,7 +183,8 @@ textWidth _scaleValue text
 
 drawDuration :: ViewParameters -> EventDuration -> Render ()
 drawDuration ViewParameters{..} (ThreadRun t s startTime endTime) = do
-  setSourceRGBAhex (if not bwMode then runningColour else black) 1.0
+  --setSourceRGBAhex (if not bwMode then runningColour else black) 1.0
+  setSourceRGBAhex (if not bwMode then runningColour else lightGrey) 1.0
   setLineWidth (1/scaleValue)
   draw_rectangle_opt False
                  startTime                  -- x
@@ -206,16 +210,20 @@ drawDuration ViewParameters{..} (ThreadRun t s startTime endTime) = do
   tStr = show t
 
 drawDuration ViewParameters{..} (GCStart startTime endTime)
-  = gcBar (if bwMode then black else gcStartColour) startTime endTime
+  -- = gcBar (if bwMode then black else gcStartColour) startTime endTime
+  = gcBar (if bwMode then lightGrey else gcStartColour) startTime endTime
 
 drawDuration ViewParameters{..} (GCWork startTime endTime)
-  = gcBar (if bwMode then black else gcWorkColour) startTime endTime
+  -- = gcBar (if bwMode then black else gcWorkColour) startTime endTime
+  = gcBar (if bwMode then lightGrey else gcWorkColour) startTime endTime
 
 drawDuration ViewParameters{..} (GCIdle startTime endTime)
-  = gcBar (if bwMode then black else gcIdleColour) startTime endTime
+  -- = gcBar (if bwMode then black else gcIdleColour) startTime endTime
+  = gcBar (if bwMode then lightGrey else gcIdleColour) startTime endTime
 
 drawDuration ViewParameters{..} (GCEnd startTime endTime)
-  = gcBar (if bwMode then black else gcEndColour) startTime endTime
+  -- = gcBar (if bwMode then black else gcEndColour) startTime endTime
+  = gcBar (if bwMode then lightGrey else gcEndColour) startTime endTime
 
 gcBar :: Color -> Timestamp -> Timestamp -> Render ()
 gcBar col !startTime !endTime = do
@@ -242,11 +250,13 @@ drawEvent :: ViewParameters -> Double -> IM.IntMap String -> GHC.Event
           -> Render Bool
 drawEvent params@ViewParameters{..} ewidth perfNames event =
   let renderI = renderInstantEvent params perfNames event ewidth
+      renderD = renderInstantEventD params perfNames event ewidth
   in case spec event of
     CreateThread{}  -> renderI createThreadColour
     RequestSeqGC{}  -> renderI seqGCReqColour
     RequestParGC{}  -> renderI parGCReqColour
-    MigrateThread{} -> renderI migrateThreadColour
+    -- MigrateThread{} -> renderD 3 3 0 migrateThreadColour
+    MigrateThread{} -> return False
     WakeupThread{}  -> renderI threadWakeupColour
     Shutdown{}      -> renderI shutdownColour
 
@@ -258,7 +268,7 @@ drawEvent params@ViewParameters{..} ewidth perfNames event =
     SparkFizzle{}   -> renderI fizzledDudsColour
     SparkGC{}       -> renderI gcColour
 
-    UserMessage{}   -> renderI userMessageColour
+    UserMessage{}   -> renderD 5 5 0 grey   -- userMessageColour
 
     PerfCounter{}    -> renderI createdConvertedColour
     PerfTracepoint{} -> renderI shutdownColour
@@ -277,6 +287,8 @@ renderInstantEvent ViewParameters{..} perfNames event ewidth color = do
   setSourceRGBAhex color 1.0
   setLineWidth (ewidth * scaleValue)
   let t = time event
+  -- setDash [5,5] 0
+  setLineWidth 1
   draw_line (t, hecBarOff-4) (t, hecBarOff+hecBarHeight+4)
   let numToLabel PerfCounter{perfNum, period} | period == 0 =
         IM.lookup (fromIntegral perfNum) perfNames
@@ -290,4 +302,28 @@ renderInstantEvent ViewParameters{..} perfNames event ewidth color = do
   labelAt labelsMode t $ showLabel (spec event)
   return True
 
+renderInstantEventD :: ViewParameters -> IM.IntMap String -> GHC.Event
+                   -> Double 
+                   -> Double -> Double -> Double
+                   -> Color
+                   -> Render Bool
+renderInstantEventD ViewParameters{..} perfNames event ewidth onPortion offPortion start color = do
+  setSourceRGBAhex color 1.0
+  setLineWidth (ewidth * scaleValue)
+  let t = time event
+  setDash [onPortion, offPortion] start
+  setLineWidth 1
+  draw_line (t, hecBarOff-4) (t, hecBarOff+hecBarHeight+4)
+  setDash [] 0
+  let numToLabel PerfCounter{perfNum, period} | period == 0 =
+        IM.lookup (fromIntegral perfNum) perfNames
+      numToLabel PerfCounter{perfNum, period} =
+        fmap (++ " <" ++ show (period + 1) ++ " times>") $
+          IM.lookup (fromIntegral perfNum) perfNames
+      numToLabel PerfTracepoint{perfNum} =
+        fmap ("tracepoint: " ++) $ IM.lookup (fromIntegral perfNum) perfNames
+      numToLabel _ = Nothing
+      showLabel espec = fromMaybe (showEventInfo espec) (numToLabel espec)
+  labelAt labelsMode t $ showLabel (spec event)
+  return True
 -------------------------------------------------------------------------------

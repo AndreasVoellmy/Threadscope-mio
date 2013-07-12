@@ -34,16 +34,19 @@ parGCReqColour :: Color
 parGCReqColour = darkBlue
 
 migrateThreadColour :: Color
-migrateThreadColour = darkRed
+-- migrateThreadColour = darkRed
+migrateThreadColour = grey
 
 threadWakeupColour :: Color
-threadWakeupColour = green
+-- threadWakeupColour = green
+threadWakeupColour = black
 
 shutdownColour :: Color
 shutdownColour = darkBrown
 
 labelTextColour :: Color
-labelTextColour = white
+-- labelTextColour = white
+labelTextColour = black
 
 bookmarkColour :: Color
 bookmarkColour = Color 0xff00 0x0000 0xff00 -- pinkish

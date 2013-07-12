@@ -39,7 +39,8 @@ renderActivity ViewParameters{..} hecs start0 end0 = do
 --  liftIO $ printf "%s\n" (show (map length hec_profs))
 --  liftIO $ printf "%s\n" (show (map (take 20) hec_profs))
   drawActivity hecs start end slice total_prof
-               (if not bwMode then runningColour else black)
+               -- (if not bwMode then runningColour else black)
+               (if not bwMode then runningColour else lightGrey)
 
 activity_detail :: Int
 activity_detail = 4 -- in pixels

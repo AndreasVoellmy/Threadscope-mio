@@ -196,7 +196,7 @@ renderSparkHistogram ViewParameters{..} hecs =
         stroke
         -- Print the number of sparks in the bar.
         selectFontFace "sans serif" FontSlantNormal FontWeightNormal
-        setFontSize 10
+        setFontSize 20
         let above = sY (-y) > -20
         if above
           then setSourceRGBAhex black 1.0

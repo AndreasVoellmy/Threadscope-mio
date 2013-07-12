@@ -20,6 +20,7 @@ saveAs hecs params' @ViewParameters{xScaleAreaHeight, width,
       params@ViewParameters{height} =
         params'{ viewTraces = viewTraces params' -- ++ [TraceHistogram]
                , height = oldHeight + histTotalHeight + tracePad
+               , bwMode = True
                }
       w = ceiling yScaleAreaWidth + width
       h = xScaleAreaHeight + height

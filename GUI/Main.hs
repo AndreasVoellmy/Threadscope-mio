@@ -275,7 +275,7 @@ eventLoop uienv@UIEnv{..} eventlogState = do
       viewParams <- timelineGetViewParameters timelineWin
       let viewParams' = viewParams {
                           detail     = 1,
-                          bwMode     = False,
+                          bwMode     = True,
                           labelsMode = False
                         }
       let yScaleArea = timelineGetYScaleArea timelineWin

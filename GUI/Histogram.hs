@@ -46,7 +46,7 @@ histogramViewNew builder = do
 
   -- HACK: layoutSetAttributes does not work for \mu, so let's work around
   fd <- fontDescriptionNew
-  fontDescriptionSetSize fd 8
+  fontDescriptionSetSize fd 20
   fontDescriptionSetFamily fd "sans serif"
   widgetModifyFont histogramYScaleArea (Just fd)
 

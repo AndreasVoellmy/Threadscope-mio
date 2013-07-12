@@ -21,15 +21,21 @@ firstTraceY = 13
 -- Gap betweem traces in the timeline view
 
 tracePad :: Int
-tracePad = 20
+--tracePad = 20
+tracePad = 6
 
 -- HEC bar height
 
 hecTraceHeight, hecInstantHeight, hecBarHeight, hecBarOff, hecLabelExtra :: Int
 
+-- hecTraceHeight   = 40
+-- hecInstantHeight = 25
+-- hecBarHeight     = 20
+-- hecBarOff        = 10
+
 hecTraceHeight   = 40
-hecInstantHeight = 25
-hecBarHeight     = 20
+hecInstantHeight = 35
+hecBarHeight     = 30
 hecBarOff        = 10
 
 -- extra space to allow between HECs when labels are on.
